@@ -69,8 +69,8 @@ for doc in documents:
 
 #Calculate the document scores (ranking) using document weigths (tf-idf) calculated before and query weights (binary - have or not the term).
 #--> add your Python code here
-query = "cat dog"
-queryTerms = set(query.split())
+query = "cat and dog"
+queryTerms = ['cat', 'dog']
 docScores = []
 
 for docWeights in docMatrix:
@@ -78,35 +78,41 @@ for docWeights in docMatrix:
     for queryTerm in queryTerms:
         termIndex = terms.index(queryTerm) if queryTerm in terms else -1
         if termIndex >= 0:
-            score += docWeights[termIndex]
+          score += docWeights[termIndex]
     docScores.append(score)
 
 #Calculate and print the precision and recall of the model by considering that the search engine will return all documents with scores >= 0.1.
 #--> add your Python code here
-
-# Calculate and print the precision and recall of the model by considering that the search engine will return all documents with scores >= 0.1.
 threshold = 0.1
 
 hits = 0
 misses = 0
 noise = 0
 
-for i, score in enumerate(docScores):
+for i in range(len(docScores)):
+    score = docScores[i]
+    label = labels[i]
+
     if score > threshold:
-        label = labels[i]
         if label == 'R':
-            hits += 1
+          hits += 1
         elif label == 'I':
-            noise += 1
+          noise += 1
     else:
-        label = labels[i]
         if label == 'R':
-            misses += 1
+          misses += 1
 
+recallDen = hits + noise
+if recallDen == 0:
+  recall = 0 
+else:
+  recall = (hits / recallDen) * 100
 
-recall = ((hits) / (hits + misses)) * 100
-
-precision = ((hits) / (hits + noise)) * 100
+precisionDen = hits + noise
+if precisionDen == 0:
+  precision = 0  
+else:
+  precision = (hits / precisionDen) * 100
 
 print("Precision: {}%".format(precision))
 print("Recall: {}%".format(recall))
