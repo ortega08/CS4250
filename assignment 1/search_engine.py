@@ -1,6 +1,6 @@
 #-------------------------------------------------------------------------
-# AUTHOR: your name
-# FILENAME: title of the source file
+# AUTHOR: Jessica Ortega
+# FILENAME: search_engine.py
 # SPECIFICATION: description of the program
 # FOR: CS 4250- Assignment #1
 # TIME SPENT: how long it took you to complete the assignment
@@ -10,6 +10,7 @@
 
 #importing some Python libraries
 import csv
+import math 
 
 documents = []
 labels = []
@@ -25,6 +26,11 @@ with open('collection.csv', 'r') as csvfile:
 #Conduct stopword removal.
 #--> add your Python code here
 stopWords = {'I', 'and', 'She', 'They', 'her', 'their'}
+for i, document in enumerate(documents):
+    documents[i] = document.split()
+
+for i, document in enumerate(documents):
+    documents[i] = [term for term in document if term not in stopWords]
 
 #Conduct stemming.
 #--> add your Python code here
@@ -34,17 +40,80 @@ steeming = {
   "loves": "love",
 }
 
+for i, document in enumerate(documents):
+    for j, term in enumerate(document):
+        if term in steeming:
+            documents[i][j] = steeming[term]
+
 #Identify the index terms.
 #--> add your Python code here
 terms = []
+for document in documents:
+    for term in document:
+        if term not in terms:
+            terms.append(term)
 
 #Build the tf-idf term weights matrix.
 #--> add your Python code here
 docMatrix = []
+for doc in documents:
+    docRow = []
+    docLen = len(doc)
+    for term in terms:
+        tf = doc.count(term) / docLen
+        df = sum(1 for doc in documents if term in doc)
+        idf = math.log10(len(documents) / (1 + df))
+        tfidf = tf * idf
+        docRow.append(tfidf)
+    docMatrix.append(docRow)
 
 #Calculate the document scores (ranking) using document weigths (tf-idf) calculated before and query weights (binary - have or not the term).
 #--> add your Python code here
+query = "cat dog"
+queryTerms = set(query.split())
 docScores = []
+
+for docWeights in docMatrix:
+    score = 0
+    for queryTerm in queryTerms:
+        termIndex = terms.index(queryTerm) if queryTerm in terms else -1
+        if termIndex >= 0:
+            score += docWeights[termIndex]
+    docScores.append(score)
 
 #Calculate and print the precision and recall of the model by considering that the search engine will return all documents with scores >= 0.1.
 #--> add your Python code here
+
+# Calculate and print the precision and recall of the model by considering that the search engine will return all documents with scores >= 0.1.
+threshold = 0.1
+
+hits = 0
+misses = 0
+noise = 0
+
+for i, score in enumerate(docScores):
+    if score > threshold:
+        label = labels[i]
+        if label == 'R':
+            hits += 1
+        elif label == 'I':
+            noise += 1
+    else:
+        label = labels[i]
+        if label == 'R':
+            misses += 1
+
+# Calculate recall and precision, ensuring they are 100% when no false positives or false negatives occur
+if hits + misses == 0:
+    recall = 100
+else:
+    recall = ((hits) / (hits + misses)) * 100
+
+if hits + noise == 0:
+    precision = 100
+else:
+    precision = ((hits) / (hits + noise)) * 100
+
+print("Precision: {}%".format(precision))
+print("Recall: {}%".format(recall))
+
