@@ -103,16 +103,10 @@ for i, score in enumerate(docScores):
         if label == 'R':
             misses += 1
 
-# Calculate recall and precision, ensuring they are 100% when no false positives or false negatives occur
-if hits + misses == 0:
-    recall = 100
-else:
-    recall = ((hits) / (hits + misses)) * 100
 
-if hits + noise == 0:
-    precision = 100
-else:
-    precision = ((hits) / (hits + noise)) * 100
+recall = ((hits) / (hits + misses)) * 100
+
+precision = ((hits) / (hits + noise)) * 100
 
 print("Precision: {}%".format(precision))
 print("Recall: {}%".format(recall))
